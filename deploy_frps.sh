@@ -1127,7 +1127,7 @@ frpc_generate_docker() {
     --network host \\
     -v /etc/frp/frpc.toml:/etc/frp/frpc.toml \\
     -v /var/log/frp:/var/log/frp \\
-    snowdreamtech/frpc:${FRPS_VERSION}
+    acallsh/frpc:${FRPS_VERSION}
 
   # 4. 查看日志
   docker logs -f frpc
@@ -1150,7 +1150,7 @@ frpc_generate_docker() {
   version: '3'
   services:
     frpc:
-      image: snowdreamtech/frpc:${FRPS_VERSION}
+      image: acallsh/frpc:${FRPS_VERSION}
       container_name: frpc
       restart: unless-stopped
       network_mode: host

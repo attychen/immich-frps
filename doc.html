@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>frps 部署脚本 - 使用文档</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23667eea'><path d='M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.186.186 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.186.186 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 00.185-.185V9.006a.186.186 0 00-.185-.186H5.136a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z'/></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        header { text-align: center; margin-bottom: 3rem; padding: 2rem 0; border-bottom: 1px solid var(--border); }
+        .logo { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .logo svg { color: var(--primary); }
+        .logo h1 { font-size: 1.8rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-controls { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
+        .nav-link { color: var(--text-secondary); text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; transition: all 0.2s; }
+        .nav-link:hover { background: var(--bg-input); color: var(--text-primary); }
+        .lang-btn { padding: 0.5rem 1rem; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .lang-btn:hover { background: var(--border); }
+        .content { background: var(--bg-card); border-radius: 12px; padding: 2rem; border: 1px solid var(--border); margin-bottom: 2rem; }
+        h2 { color: var(--primary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); font-size: 1.5rem; }
+        h3 { color: var(--text-primary); margin: 1.5rem 0 0.75rem; }
+        p { color: var(--text-secondary); margin-bottom: 1rem; }
+        ul, ol { color: var(--text-secondary); margin-left: 1.5rem; margin-bottom: 1rem; }
+        li { margin-bottom: 0.5rem; }
+        code { background: var(--bg-dark); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: 'Monaco', monospace; font-size: 0.9em; color: var(--success); }
+        pre { background: var(--bg-dark); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+        pre code { padding: 0; background: none; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.75rem; text-align: left; border: 1px solid var(--border); }
+        th { background: var(--bg-input); font-weight: 600; }
+        td { color: var(--text-secondary); }
+        .warning { background: rgba(237, 137, 54, 0.1); border: 1px solid rgba(237, 137, 54, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+        .warning strong { color: var(--warning); }
+        footer { text-align: center; margin-top: 3rem; padding: 2rem; border-top: 1px solid var(--border); color: var(--text-secondary); }
+        footer a { color: var(--primary); text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg viewBox="0 0 24 24" width="36" height="36" fill="currentColor">
+                    <path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.186.186 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.186.186 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.083.185.185.185m-2.964 0h2.119a.186.186 0 00.185-.185V9.006a.186.186 0 00-.185-.186H5.136a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.887c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/>
+                </svg>
+                <h1 id="page-title">frps 部署脚本 - 使用文档</h1>
+            </div>
+            <div class="header-controls">
+                <a href="https://github.com/Ac-All-Sh/immich-frps" class="nav-link">GitHub</a>
+                <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">EN</button>
+            </div>
+        </header>
+
+        <div class="content" id="doc-zh">
+            <h2>简介</h2>
+            <p>frps 一键部署脚本是一个交互式工具，用于在 Linux 服务器上快速部署和管理 frps (Fast Reverse Proxy) 服务。</p>
+
+            <h2>系统要求</h2>
+            <ul>
+                <li>操作系统: Debian 10/11/12, Ubuntu 20.04/22.04/24.04</li>
+                <li>权限: root 用户</li>
+                <li>依赖: curl, tar (脚本自动安装)</li>
+            </ul>
+
+            <h2>快速开始</h2>
+            <pre><code>git clone https://github.com/Ac-All-Sh/immich-frps.git
+cd immich-frps
+bash deploy_frps.sh</code></pre>
+
+            <h2>主菜单说明</h2>
+            <table>
+                <tr><th>选项</th><th>功能</th><th>说明</th></tr>
+                <tr><td>[1]</td><td>一键部署</td><td>使用当前配置部署 frps 服务端</td></tr>
+                <tr><td>[2]</td><td>修改配置</td><td>修改端口、用户名、密码、Token 等</td></tr>
+                <tr><td>[3]</td><td>查看配置</td><td>查看当前所有配置项</td></tr>
+                <tr><td>[4]</td><td>管理服务</td><td>启动/停止/重启/状态/日志</td></tr>
+                <tr><td>[5]</td><td>生成 frpc 配置</td><td>生成客户端配置文件</td></tr>
+                <tr><td>[6]</td><td>配置备份/恢复</td><td>导出或导入 frps 配置</td></tr>
+                <tr><td>[7]</td><td>多服务器管理</td><td>管理多个 frps 服务器实例</td></tr>
+                <tr><td>[8]</td><td>监控面板</td><td>查看连接数、流量等统计</td></tr>
+                <tr><td>[9]</td><td>卸载 frps</td><td>清除所有 frps 相关配置</td></tr>
+            </table>
+
+            <h2>配置备份/恢复</h2>
+            <h3>备份配置</h3>
+            <pre><code># 选择 [6] → [1]
+# 备份文件保存在: /root/frps_backups/</code></pre>
+
+            <h3>恢复配置</h3>
+            <pre><code># 选择 [6] → [2]
+# 输入备份文件路径即可恢复</code></pre>
+
+            <h2>多服务器管理</h2>
+            <h3>添加服务器</h3>
+            <pre><code># 选择 [7] → [1]
+# 输入服务器名称、IP、SSH 端口、用户名</code></pre>
+
+            <h3>远程管理</h3>
+            <pre><code># 选择 [7] → [3]
+# 选择服务器后可执行远程命令</code></pre>
+
+            <h2>监控面板</h2>
+            <pre><code># 选择 [8]
+# 显示:
+# - 服务状态 (运行中/已停止)
+# - 进程信息 (PID/内存/CPU)
+# - 网络连接数
+# - 系统资源使用
+# - 最近日志</code></pre>
+
+            <h2>Docker 部署</h2>
+            <h3>使用 Docker</h3>
+            <pre><code># 拉取镜像
+docker pull acallsh/frps:0.69.1
+
+# 运行容器
+docker run -d \
+  --name frps \
+  --restart unless-stopped \
+  --network host \
+  -v /etc/frp/frps.toml:/etc/frp/frps.toml \
+  -v /var/log/frp:/var/log/frp \
+  acallsh/frps:0.69.1</code></pre>
+
+            <h3>使用 Docker Compose</h3>
+            <pre><code>version: '3'
+services:
+  frps:
+    image: acallsh/frps:0.69.1
+    container_name: frps
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /etc/frp/frps.toml:/etc/frp/frps.toml
+      - /var/log/frp:/var/log/frp</code></pre>
+
+            <h2>管理命令</h2>
+            <pre><code>systemctl start frps      # 启动
+systemctl stop frps       # 停止
+systemctl restart frps    # 重启
+systemctl status frps     # 状态
+journalctl -u frps -f     # 日志</code></pre>
+
+            <h2>端口说明</h2>
+            <table>
+                <tr><th>端口</th><th>用途</th></tr>
+                <tr><td>7000</td><td>frps 主端口</td></tr>
+                <tr><td>7500</td><td>Dashboard</td></tr>
+                <tr><td>8080</td><td>HTTP 代理</td></tr>
+                <tr><td>8443</td><td>HTTPS 代理</td></tr>
+            </table>
+
+            <h2>frpc 客户端配置</h2>
+            <pre><code>serverAddr = "你的服务器IP"
+serverPort = 7000
+auth.method = "token"
+auth.token = "immich_secure_token_2026"
+transport.poolCount = 10
+transport.tcpMux = true
+transport.heartbeatInterval = 10
+transport.heartbeatTimeout = 300
+
+[[proxies]]
+name = "ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000</code></pre>
+
+            <div class="warning">
+                <strong>注意:</strong> 修改配置后需要重启 frps 服务才能生效。
+            </div>
+        </div>
+
+        <div class="content" id="doc-en" style="display: none;">
+            <h2>Introduction</h2>
+            <p>frps One-Click Deploy Script is an interactive tool for quickly deploying and managing frps (Fast Reverse Proxy) service on Linux servers.</p>
+
+            <h2>System Requirements</h2>
+            <ul>
+                <li>OS: Debian 10/11/12, Ubuntu 20.04/22.04/24.04</li>
+                <li>Privileges: root user</li>
+                <li>Dependencies: curl, tar (auto-installed)</li>
+            </ul>
+
+            <h2>Quick Start</h2>
+            <pre><code>git clone https://github.com/Ac-All-Sh/immich-frps.git
+cd immich-frps
+bash deploy_frps.sh</code></pre>
+
+            <h2>Main Menu</h2>
+            <table>
+                <tr><th>Option</th><th>Function</th><th>Description</th></tr>
+                <tr><td>[1]</td><td>One-Click Deploy</td><td>Deploy frps with current config</td></tr>
+                <tr><td>[2]</td><td>Modify Config</td><td>Modify ports, username, password, token</td></tr>
+                <tr><td>[3]</td><td>View Config</td><td>View all config items</td></tr>
+                <tr><td>[4]</td><td>Manage Service</td><td>Start/Stop/Restart/Status/Logs</td></tr>
+                <tr><td>[5]</td><td>Generate frpc Config</td><td>Generate client config file</td></tr>
+                <tr><td>[6]</td><td>Backup/Restore</td><td>Export or import frps config</td></tr>
+                <tr><td>[7]</td><td>Multi-Server</td><td>Manage multiple frps instances</td></tr>
+                <tr><td>[8]</td><td>Monitor</td><td>View connections, traffic stats</td></tr>
+                <tr><td>[9]</td><td>Uninstall</td><td>Remove all frps configs</td></tr>
+            </table>
+
+            <h2>Backup/Restore</h2>
+            <h3>Backup</h3>
+            <pre><code># Select [6] → [1]
+# Backup saved to: /root/frps_backups/</code></pre>
+
+            <h3>Restore</h3>
+            <pre><code># Select [6] → [2]
+# Enter backup file path to restore</code></pre>
+
+            <h2>Multi-Server Management</h2>
+            <h3>Add Server</h3>
+            <pre><code># Select [7] → [1]
+# Enter server name, IP, SSH port, username</code></pre>
+
+            <h3>Remote Management</h3>
+            <pre><code># Select [7] → [3]
+# Select server to execute remote commands</code></pre>
+
+            <h2>Monitor Panel</h2>
+            <pre><code># Select [8]
+# Shows:
+# - Service status (running/stopped)
+# - Process info (PID/memory/CPU)
+# - Network connections
+# - System resources
+# - Recent logs</code></pre>
+
+            <h2>Docker Deployment</h2>
+            <h3>Using Docker</h3>
+            <pre><code># Pull image
+docker pull acallsh/frps:0.69.1
+
+# Run container
+docker run -d \
+  --name frps \
+  --restart unless-stopped \
+  --network host \
+  -v /etc/frp/frps.toml:/etc/frp/frps.toml \
+  -v /var/log/frp:/var/log/frp \
+  acallsh/frps:0.69.1</code></pre>
+
+            <h3>Using Docker Compose</h3>
+            <pre><code>version: '3'
+services:
+  frps:
+    image: acallsh/frps:0.69.1
+    container_name: frps
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /etc/frp/frps.toml:/etc/frp/frps.toml
+      - /var/log/frp:/var/log/frp</code></pre>
+
+            <h2>Management Commands</h2>
+            <pre><code>systemctl start frps      # Start
+systemctl stop frps       # Stop
+systemctl restart frps    # Restart
+systemctl status frps     # Status
+journalctl -u frps -f     # Logs</code></pre>
+
+            <h2>Port Reference</h2>
+            <table>
+                <tr><th>Port</th><th>Usage</th></tr>
+                <tr><td>7000</td><td>frps main port</td></tr>
+                <tr><td>7500</td><td>Dashboard</td></tr>
+                <tr><td>8080</td><td>HTTP proxy</td></tr>
+                <tr><td>8443</td><td>HTTPS proxy</td></tr>
+            </table>
+
+            <h2>frpc Client Config</h2>
+            <pre><code>serverAddr = "your-server-ip"
+serverPort = 7000
+auth.method = "token"
+auth.token = "immich_secure_token_2026"
+transport.poolCount = 10
+transport.tcpMux = true
+transport.heartbeatInterval = 10
+transport.heartbeatTimeout = 300
+
+[[proxies]]
+name = "ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000</code></pre>
+
+            <div class="warning">
+                <strong>Note:</strong> Restart frps service after modifying config for changes to take effect.
+            </div>
+        </div>
+
+        <footer>
+            <p>Author: <a href="https://github.com/Ac-All-Sh">Ac.All.Sh</a> | <a href="https://github.com/Ac-All-Sh/immich-frps">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script>
+        let currentLang = localStorage.getItem('frps-doc-lang') || 'zh';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('frps-doc-lang', currentLang);
+            updatePage();
+        }
+
+        function updatePage() {
+            document.getElementById('langBtn').textContent = currentLang === 'zh' ? 'EN' : '中文';
+            document.getElementById('page-title').textContent = currentLang === 'zh' ? 'frps 部署脚本 - 使用文档' : 'frps Deploy Script - Documentation';
+            document.getElementById('doc-zh').style.display = currentLang === 'zh' ? 'block' : 'none';
+            document.getElementById('doc-en').style.display = currentLang === 'en' ? 'block' : 'none';
+        }
+
+        updatePage();
+    </script>
+</body>
+</html>
