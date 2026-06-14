@@ -15,13 +15,22 @@ jobs:
       - name: Check latest frp version
         id: check
         run: |
+          set +e
+          
           LATEST_VERSION=$(curl -s https://api.github.com/repos/fatedier/frp/releases/latest | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
           echo "Latest version: $LATEST_VERSION"
           
-          # 检查是否已存在此版本的 release
-          EXISTING=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION} | grep -c '"tag_name"')
+          if [ -z "$LATEST_VERSION" ]; then
+            echo "Failed to get latest version"
+            echo "should_build=false" >> $GITHUB_OUTPUT
+            echo "version=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           
-          if [ "$EXISTING" -gt 0 ]; then
+          # 检查是否已存在此版本的 release
+          RESPONSE=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/tags/v${LATEST_VERSION}")
+          
+          if echo "$RESPONSE" | grep -q '"tag_name"'; then
             echo "Version $LATEST_VERSION already released"
             echo "should_build=false" >> $GITHUB_OUTPUT
           else
