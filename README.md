@@ -338,10 +338,10 @@ chmod +x /usr/local/bin/frpc
 # Docker Hub
 docker pull acallsh/frps:latest-amd64
 docker pull acallsh/frpc:latest-amd64
-
-# GitHub Container Registry
-docker pull ghcr.io/ac-all-sh/frps:latest-amd64
-docker pull ghcr.io/ac-all-sh/frpc:latest-amd64
+docker pull acallsh/frps:latest-arm64
+docker pull acallsh/frpc:latest-arm64
+docker pull acallsh/frps:latest-arm
+docker pull acallsh/frpc:latest-arm
 ```
 
 ### License

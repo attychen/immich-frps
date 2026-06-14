@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64, arm64, arm]
     
     steps:
       - name: Download frps binary
@@ -92,6 +92,8 @@ jobs:
             platform: linux/amd64
           - arch: arm64
             platform: linux/arm64
+          - arch: arm
+            platform: linux/arm/v7
     
     steps:
       - name: Checkout
@@ -189,6 +191,10 @@ jobs:
             # Docker Hub
             docker pull acallsh/frps:${{ needs.check-version.outputs.version }}-amd64
             docker pull acallsh/frpc:${{ needs.check-version.outputs.version }}-amd64
+            docker pull acallsh/frps:${{ needs.check-version.outputs.version }}-arm64
+            docker pull acallsh/frpc:${{ needs.check-version.outputs.version }}-arm64
+            docker pull acallsh/frps:${{ needs.check-version.outputs.version }}-arm
+            docker pull acallsh/frpc:${{ needs.check-version.outputs.version }}-arm
             ```
             
             ### Quick Start
