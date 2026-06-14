@@ -41,4 +41,10 @@ bash deploy_frps.sh
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Ac-All-Sh/immich-frps&type=Date)](https://star-history.com/#Ac-All-Sh/immich-frps&Date)
+<a href="https://star-history.com/#Ac-All-Sh/immich-frps&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Ac-All-Sh/immich-frps&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Ac-All-Sh/immich-frps&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Ac-All-Sh/immich-frps&type=Date" />
+ </picture>
+</a>
