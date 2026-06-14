@@ -312,10 +312,6 @@ rm -f /etc/systemd/system/frps.service
 - Multi-protocol frpc config generation
 - Docker deployment support
 
-### License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-
 ### Releases and Artifacts
 
 This repository automatically checks for new frp releases every week and generates:
@@ -347,6 +343,10 @@ docker pull acallsh/frpc:latest-amd64
 docker pull ghcr.io/ac-all-sh/frps:latest-amd64
 docker pull ghcr.io/ac-all-sh/frpc:latest-amd64
 ```
+
+### License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
 ### Author
 
@@ -648,6 +648,38 @@ rm -f /etc/systemd/system/frps.service
 - 动态网络优化
 - 多协议 frpc 配置生成
 - Docker 部署支持
+
+### 发布与制品
+
+本仓库每周自动检查 frp 新版本并生成：
+
+- **二进制文件**: frps 和 frpc (amd64/arm64/arm)
+- **Docker 镜像**: Docker Hub 和 GitHub Container Registry
+- **校验和**: 所有二进制文件的 SHA256 验证
+
+#### 下载二进制文件
+
+```bash
+# 下载最新 frps (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frps_linux_amd64 -o /usr/local/bin/frps
+chmod +x /usr/local/bin/frps
+
+# 下载最新 frpc (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frpc_linux_amd64 -o /usr/local/bin/frpc
+chmod +x /usr/local/bin/frpc
+```
+
+#### Docker 镜像
+
+```bash
+# Docker Hub
+docker pull acallsh/frps:latest-amd64
+docker pull acallsh/frpc:latest-amd64
+
+# GitHub Container Registry
+docker pull ghcr.io/ac-all-sh/frps:latest-amd64
+docker pull ghcr.io/ac-all-sh/frpc:latest-amd64
+```
 
 ### 许可证
 
@@ -955,6 +987,38 @@ rm -f /etc/systemd/system/frps.service
 - マルチプロトコルfrpc設定生成
 - Dockerデプロイサポート
 
+### リリースとアーティファクト
+
+このリポジトリは毎週自動的にfrpの新しいリリースをチェックし、以下を生成します:
+
+- **バイナリファイル**: frpsとfrpc (amd64/arm64/arm)
+- **Dockerイメージ**: Docker HubとGitHub Container Registryで利用可能
+- **チェックサム**: すべてのバイナリファイルのSHA256検証
+
+#### バイナリファイルをダウンロード
+
+```bash
+# 最新のfrpsをダウンロード (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frps_linux_amd64 -o /usr/local/bin/frps
+chmod +x /usr/local/bin/frps
+
+# 最新のfrpcをダウンロード (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frpc_linux_amd64 -o /usr/local/bin/frpc
+chmod +x /usr/local/bin/frpc
+```
+
+#### Dockerイメージ
+
+```bash
+# Docker Hub
+docker pull acallsh/frps:latest-amd64
+docker pull acallsh/frpc:latest-amd64
+
+# GitHub Container Registry
+docker pull ghcr.io/ac-all-sh/frps:latest-amd64
+docker pull ghcr.io/ac-all-sh/frpc:latest-amd64
+```
+
 ### ライセンス
 
 このプロジェクトはMITライセンスでライセンスされています - 詳細は[LICENSE](LICENSE)ファイルを参照してください
@@ -1261,6 +1325,38 @@ rm -f /etc/systemd/system/frps.service
 - 다중 프로토콜 frpc 설정 생성
 - Docker 배포 지원
 
+### 릴리스 및 아티팩트
+
+이 리포지토리는 매주 자동으로 frp의 새 릴리스를 확인하고 다음을 생성합니다:
+
+- **바이너리 파일**: frps와 frpc (amd64/arm64/arm)
+- **Docker 이미지**: Docker Hub와 GitHub Container Registry에서 사용 가능
+- **체크섬**: 모든 바이너리 파일의 SHA256 검증
+
+#### 바이너리 파일 다운로드
+
+```bash
+# 최신 frps 다운로드 (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frps_linux_amd64 -o /usr/local/bin/frps
+chmod +x /usr/local/bin/frps
+
+# 최신 frpc 다운로드 (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frpc_linux_amd64 -o /usr/local/bin/frpc
+chmod +x /usr/local/bin/frpc
+```
+
+#### Docker 이미지
+
+```bash
+# Docker Hub
+docker pull acallsh/frps:latest-amd64
+docker pull acallsh/frpc:latest-amd64
+
+# GitHub Container Registry
+docker pull ghcr.io/ac-all-sh/frps:latest-amd64
+docker pull ghcr.io/ac-all-sh/frpc:latest-amd64
+```
+
 ### 라이선스
 
 이 프로젝트는 MIT 라이선스로 라이선스가 부여됩니다 - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요
@@ -1268,6 +1364,18 @@ rm -f /etc/systemd/system/frps.service
 ### 개발자
 
 **Ac.All.Sh** - [GitHub](https://github.com/Ac-All-Sh)
+
+---
+
+## Author
+
+<div align="center">
+
+![Ac.All.Sh](https://github.com/Ac-All-Sh.png?size=100)
+
+**Ac.All.Sh** | [GitHub](https://github.com/Ac-All-Sh) | WeChat: @attychen
+
+</div>
 
 ---
 
@@ -1279,27 +1387,6 @@ rm -f /etc/systemd/system/frps.service
 
 </div>
 
-<div align="center">
-
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=Ac-All-Sh&show_icons=true&theme=radical&hide_border=false)
-
-</div>
-
-<div align="center">
-
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Ac-All-Sh&layout=compact&theme=radical)
-
-</div>
-
 ---
 
-## Contact
-
-| Platform | Contact |
-|----------|---------|
-| WeChat | @attychen |
-| GitHub | [Ac-All-Sh](https://github.com/Ac-All-Sh) |
-
----
-
-**Author: Ac.All.Sh** | [GitHub](https://github.com/Ac-All-Sh) | MIT License
+**Ac.All.Sh** | MIT License
