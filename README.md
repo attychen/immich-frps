@@ -316,6 +316,38 @@ rm -f /etc/systemd/system/frps.service
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
 
+### Releases and Artifacts
+
+This repository automatically checks for new frp releases every week and generates:
+
+- **Binary Files**: frps and frpc for amd64, arm64, arm architectures
+- **Docker Images**: Available on Docker Hub and GitHub Container Registry
+- **Checksums**: SHA256 verification for all binaries
+
+#### Download Binaries
+
+```bash
+# Download latest frps (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frps_linux_amd64 -o /usr/local/bin/frps
+chmod +x /usr/local/bin/frps
+
+# Download latest frpc (amd64)
+curl -fsSL https://github.com/Ac-All-Sh/immich-frps/releases/latest/download/frpc_linux_amd64 -o /usr/local/bin/frpc
+chmod +x /usr/local/bin/frpc
+```
+
+#### Docker Images
+
+```bash
+# Docker Hub
+docker pull acallsh/frps:latest-amd64
+docker pull acallsh/frpc:latest-amd64
+
+# GitHub Container Registry
+docker pull ghcr.io/ac-all-sh/frps:latest-amd64
+docker pull ghcr.io/ac-all-sh/frpc:latest-amd64
+```
+
 ### Author
 
 **Ac.All.Sh** - [GitHub](https://github.com/Ac-All-Sh)
