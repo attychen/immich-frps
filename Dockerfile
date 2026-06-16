@@ -1,6 +1,6 @@
 # ============================================================
 # frps-panel 多架构 Docker 镜像
-# 构建: docker buildx build --platform linux/amd64,linux/arm64 -t acallsh/frps-panel:latest --push .
+# 构建: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t acallsh/frps-panel:latest --push .
 # ============================================================
 
 # ---- Stage 1: 构建 Vue 前端 ----
