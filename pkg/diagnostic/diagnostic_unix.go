@@ -28,8 +28,8 @@ func checkDiskUnix() CheckItem {
 	if err := unix.Statfs("/", &stat); err != nil {
 		return CheckItem{Name: "磁盘使用率", Status: "error", Message: "无法获取", Value: err.Error()}
 	}
-	total := stat.Blocks * uint64(stat.Bsize)
-	avail := stat.Bavail * uint64(stat.Bsize)
+	total := uint64(stat.Blocks) * uint64(stat.Bsize)
+	avail := uint64(stat.Bavail) * uint64(stat.Bsize)
 	used := total - avail
 	percent := float64(used) / float64(total) * 100
 	val := fmt.Sprintf("%.1f%% (已用%.0fGB/总量%.0fGB)", percent,

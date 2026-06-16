@@ -27,8 +27,8 @@ RUN go mod download
 # 复制源码
 COPY . .
 
-# 复制前端构建产物到静态目录
-COPY --from=frontend-builder /app/web/frps/dist ./web/frps/dist
+# 复制前端构建产物（vite 输出到 assets/frps/static）
+COPY --from=frontend-builder /app/assets/frps/static ./assets/frps/static
 
 # 构建参数
 ARG TARGETOS
