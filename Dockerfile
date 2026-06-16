@@ -1,6 +1,6 @@
 # ============================================================
 # frps-panel 多架构 Docker 镜像
-# 构建: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t attychen/frps-panel:latest --push .
+# 构建: docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t acallsh/frps-panel:latest --push .
 # ============================================================
 
 # ---- Stage 1: 构建 Vue 前端 ----
@@ -57,6 +57,7 @@ FROM alpine:3.20
 LABEL org.opencontainers.image.title="frps-panel"
 LABEL org.opencontainers.image.description="frps Web 管理面板 — 监控、优化、带宽管理"
 LABEL org.opencontainers.image.source="https://github.com/attychen/immich-frps"
+LABEL org.opencontainers.image.vendor="acallsh"
 LABEL org.opencontainers.image.licenses="MIT"
 
 RUN apk add --no-cache ca-certificates tzdata curl && \

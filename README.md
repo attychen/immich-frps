@@ -48,20 +48,7 @@
 
 ## 🚀 快速上手
 
-### 方式一：Docker 部署（推荐）
-
-```bash
-# 拉取镜像（自动适配 amd64 / arm64 / armv7）
-docker pull attychen/frps-panel:latest
-
-# 运行 frps 面板
-docker run -d --name frps-panel --network host \
-  -v /etc/frp:/etc/frp \
-  -v /var/log/frp:/var/log/frp \
-  attychen/frps-panel:latest
-```
-
-### 方式二：二进制安装
+### 方式一：二进制安装（推荐）
 
 从 [Releases](https://github.com/attychen/immich-frps/releases) 下载对应架构的二进制文件：
 
@@ -74,47 +61,22 @@ chmod +x acfrps_v0.69.1_attychen_linux_amd64
 
 按提示输入端口、用户名、密码即可完成安装。
 
----
+### 方式二：Docker 部署
 
-## 📸 界面预览
+```bash
+# 拉取镜像（自动适配 amd64 / arm64 / armv7）
+docker pull acallsh/frps-panel:latest
 
-### frps 服务端面板
-
-<div align="center">
-  <img src="./static/images/panel.png" alt="frps 面板主页" width="80%"/>
-  <p><em>frps 管理面板主页</em></p>
-</div>
-
-### 在线升级
-
-<div align="center">
-  <img src="./static/images/upgrade.png" alt="在线升级" width="80%"/>
-  <p><em>支持 URL 和文件上传两种升级方式</em></p>
-</div>
-
-### 配置管理
-
-<div align="center">
-  <img src="./static/images/config.png" alt="在线配置" width="80%"/>
-  <p><em>Web 界面完成所有 frp 配置</em></p>
-</div>
-
-### 客户端生成
-
-<div align="center">
-  <img src="./static/images/gencls.png" alt="生成客户端" width="80%"/>
-  <p><em>一键生成内嵌密钥的 frpc 客户端</em></p>
-</div>
-
-### frpc 客户端面板
-
-<div align="center">
-  <img src="./static/images/frpc-panel.png" alt="frpc 面板" width="80%"/>
-</div>
+# 运行 frps 面板
+docker run -d --name frps-panel --network host \
+  -v /etc/frp:/etc/frp \
+  -v /var/log/frp:/var/log/frp \
+  acallsh/frps-panel:latest
+```
 
 ---
 
-## 📂 项目结构
+##  项目结构
 
 ```
 frps-panel/

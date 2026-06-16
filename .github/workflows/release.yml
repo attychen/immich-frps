@@ -17,7 +17,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: attychen/frps-panel
+  IMAGE_NAME: acallsh/frps-panel
   MODULE_PATH: github.com/xxl6097/go-frp-panel
 
 jobs:
