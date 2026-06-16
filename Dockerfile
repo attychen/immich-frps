@@ -11,7 +11,7 @@ COPY web/frps/package*.json ./
 RUN npm install --force
 
 COPY web/frps/ ./
-RUN npm run build
+RUN npm run build:ci
 
 # ---- Stage 2: 构建 Go 后端 ----
 FROM golang:1.23-alpine AS backend-builder

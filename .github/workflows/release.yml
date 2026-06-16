@@ -1,4 +1,4 @@
-name: Build and Release frps-panel
+name: Build and Release frps-panel (全架构)
 
 on:
   push:
@@ -10,18 +10,178 @@ on:
       - 'doc.html'
   workflow_dispatch:
     inputs:
-      version:
-        description: '版本号 (留空自动生成)'
+      frp_version:
+        description: 'frp 版本号 (如 0.69.1，留空则自动获取最新)'
         required: false
         default: ''
 
 env:
   REGISTRY: docker.io
   IMAGE_NAME: attychen/frps-panel
+  # Go 模块路径（用于 ldflags 注入版本信息）
+  MODULE_PATH: github.com/xxl6097/go-frp-panel
 
 jobs:
-  # ==================== 构建多架构 Docker 镜像 ====================
+  # ==================== 获取 frp 版本 ====================
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      frp_version: ${{ steps.version.outputs.frp_version }}
+      panel_version: ${{ steps.version.outputs.panel_version }}
+      build_date: ${{ steps.version.outputs.build_date }}
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.frp_version }}" ]; then
+            FRP_VERSION="${{ github.event.inputs.frp_version }}"
+          else
+            FRP_VERSION=$(curl -s https://api.github.com/repos/fatedier/frp/releases/latest | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')
+            if [ -z "$FRP_VERSION" ]; then
+              FRP_VERSION="0.69.1"
+            fi
+          fi
+          PANEL_VERSION="v${FRP_VERSION}_attychen"
+          BUILD_DATE=$(date -u +'%Y%m%d')
+          echo "frp_version=$FRP_VERSION" >> $GITHUB_OUTPUT
+          echo "panel_version=$PANEL_VERSION" >> $GITHUB_OUTPUT
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+          echo "FRP Version: v$FRP_VERSION"
+          echo "Panel Version: $PANEL_VERSION"
+          echo "Build Date: $BUILD_DATE"
+
+  # ==================== 构建前端 (共享) ====================
+  build-frontend:
+    runs-on: ubuntu-latest
+    outputs:
+      dist-sha: ${{ steps.hash.outputs.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build Vue frontend
+        run: |
+          cd web/frps
+          npm install --force
+          npm run build:ci
+          echo "Frontend built:"
+          ls -lh dist/ | head -10
+
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: web/frps/dist/
+          retention-days: 1
+
+  # ==================== 全架构二进制构建 ====================
+  build-binaries:
+    needs: [get-version, build-frontend]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # ─── Linux ───
+          - os: linux       ; goos: linux     ; goarch: amd64   ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: arm64   ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: arm     ; goarm: '7'  ; gomips: ''   ; ext: ''    ; sufsfx: 'hf'
+          - os: linux       ; goos: linux     ; goarch: arm     ; goarm: '5'  ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: mips64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: mips64le; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: mips    ; goarm: ''   ; gomips: 'softfloat' ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: mipsle  ; goarm: ''   ; gomips: 'softfloat' ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: riscv64 ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: linux       ; goos: linux     ; goarch: loong64 ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          # ─── Windows ───
+          - os: windows     ; goos: windows   ; goarch: amd64  ; goarm: ''   ; gomips: ''   ; ext: '.exe' ; sufsfx: ''
+          - os: windows     ; goos: windows   ; goarch: arm64  ; goarm: ''   ; gomips: ''   ; ext: '.exe' ; sufsfx: ''
+          # ─── macOS ───
+          - os: darwin      ; goos: darwin    ; goarch: amd64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: darwin      ; goos: darwin    ; goarch: arm64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          # ─── FreeBSD ───
+          - os: freebsd     ; goos: freebsd   ; goarch: amd64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          # ─── Android ───
+          - os: android     ; goos: android   ; goarch: arm64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Download frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: web/frps/dist/
+
+      - name: Set build variables
+        id: vars
+        run: |
+          ARCH_NAME="${{ matrix.os }}_${{ matrix.goarch }}${{ matrix.sufsfx }}"
+          FRPS="acfrps_${{ needs.get-version.outputs.panel_version }}_${ARCH_NAME}${{ matrix.ext }}"
+          FRPC="acfrpc_${{ needs.get-version.outputs.panel_version }}_${ARCH_NAME}${{ matrix.ext }}"
+          echo "frps_name=$FRPS" >> $GITHUB_OUTPUT
+          echo "frpc_name=$FRPC" >> $GITHUB_OUTPUT
+          echo "Arch: $ARCH_NAME → $FRPS / $FRPC"
+
+      - name: Build acfrps (frps server + 面板)
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+          GOMIPS: ${{ matrix.gomips }}
+        run: |
+          BIN_NAME="${{ steps.vars.outputs.frps_name }}"
+          go build -trimpath -ldflags="-s -w \
+            -X '${{ env.MODULE_PATH }}/pkg.AppName=acfrps' \
+            -X '${{ env.MODULE_PATH }}/pkg.AppVersion=${{ needs.get-version.outputs.panel_version }}' \
+            -X '${{ env.MODULE_PATH }}/pkg.BuildTime=${{ needs.get-version.outputs.build_date }}' \
+            -X '${{ env.MODULE_PATH }}/pkg.BinName=${BIN_NAME}'" \
+            -o "${BIN_NAME}" ./cmd/frps
+          chmod +x "${BIN_NAME}" 2>/dev/null || true
+          sha256sum "${BIN_NAME}" > "${BIN_NAME}.sha256"
+          ls -lh "${BIN_NAME}"
+
+      - name: Build acfrpc (frpc client)
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+          GOMIPS: ${{ matrix.gomips }}
+        run: |
+          BIN_NAME="${{ steps.vars.outputs.frpc_name }}"
+          go build -trimpath -ldflags="-s -w \
+            -X '${{ env.MODULE_PATH }}/pkg.AppName=acfrpc' \
+            -X '${{ env.MODULE_PATH }}/pkg.AppVersion=${{ needs.get-version.outputs.panel_version }}' \
+            -X '${{ env.MODULE_PATH }}/pkg.BuildTime=${{ needs.get-version.outputs.build_date }}' \
+            -X '${{ env.MODULE_PATH }}/pkg.BinName=${BIN_NAME}'" \
+            -o "${BIN_NAME}" ./cmd/frpc
+          chmod +x "${BIN_NAME}" 2>/dev/null || true
+          sha256sum "${BIN_NAME}" > "${BIN_NAME}.sha256"
+          ls -lh "${BIN_NAME}"
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.os }}-${{ matrix.goarch }}${{ matrix.sufsfx }}
+          path: |
+            acfrps_*
+            acfrpc_*
+          retention-days: 7
+
+  # ==================== Docker 多架构镜像 ====================
   build-docker:
+    needs: [get-version, build-frontend]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,6 +190,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: web/frps/dist/
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -43,17 +209,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Generate version tag
-        id: version
-        run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            VERSION=$(date +'%Y.%m.%d')-${GITHUB_SHA::7}
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
-
       - name: Build and push frps-panel (multi-arch)
         uses: docker/build-push-action@v5
         with:
@@ -62,195 +217,68 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ env.IMAGE_NAME }}:${{ needs.get-version.outputs.panel_version }}
             ${{ env.IMAGE_NAME }}:latest
           build-args: |
-            VERSION=${{ steps.version.outputs.version }}
-            BUILD_TIME=${{ github.event.repository.updated_at }}
+            VERSION=${{ needs.get-version.outputs.panel_version }}
+            BUILD_TIME=${{ needs.get-version.outputs.build_date }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # ==================== 构建二进制离线包 ====================
-  build-binaries:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - arch: amd64
-            goarch: amd64
-            goarm: ''
-          - arch: arm64
-            goarch: arm64
-            goarm: ''
-          - arch: armv7
-            goarch: arm
-            goarm: '7'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.23'
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Build Vue frontend
-        run: |
-          cd web/frps
-          npm install --force
-          npm run build
-
-      - name: Build Go backend
-        env:
-          GOOS: linux
-          GOARCH: ${{ matrix.goarch }}
-          GOARM: ${{ matrix.goarm }}
-        run: |
-          VERSION=$(date +'%Y.%m.%d')-${GITHUB_SHA::7}
-          BINARY="frps-panel_linux_${{ matrix.arch }}"
-
-          # 复制前端产物
-          mkdir -p web/frps/dist
-          cp -r web/frps/dist/* web/frps/dist/ 2>/dev/null || true
-
-          go build -trimpath -ldflags="-s -w \
-            -X github.com/xxl6097/go-frp-panel/pkg.AppVersion=${VERSION} \
-            -X github.com/xxl6097/go-frp-panel/pkg.BuildTime=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-            -o ${BINARY} ./cmd/server
-
-          chmod +x ${BINARY}
-          sha256sum ${BINARY} > ${BINARY}.sha256
-          echo "Built: ${BINARY}"
-          ls -lh ${BINARY}
-
-      - name: Package offline bundle
-        run: |
-          ARCH=${{ matrix.arch }}
-          BUNDLE="frps-panel_offline_linux_${ARCH}"
-
-          mkdir -p ${BUNDLE}
-          cp frps-panel_linux_${ARCH} ${BUNDLE}/frps-panel
-          cp frps.toml ${BUNDLE}/frps.toml
-          cp deploy_frps.sh ${BUNDLE}/deploy_frps.sh 2>/dev/null || true
-          cp README.md ${BUNDLE}/README.md 2>/dev/null || true
-          cp LICENSE ${BUNDLE}/LICENSE 2>/dev/null || true
-
-          cat > ${BUNDLE}/install.sh << 'INSTALL_EOF'
-          #!/bin/sh
-          set -e
-          BIN_DIR="/usr/local/bin"
-          CONFIG_DIR="/etc/frp"
-          echo "Installing frps-panel..."
-          mkdir -p ${BIN_DIR} ${CONFIG_DIR}
-          cp frps-panel ${BIN_DIR}/frps-panel
-          chmod +x ${BIN_DIR}/frps-panel
-          if [ ! -f ${CONFIG_DIR}/frps.toml ]; then
-            cp frps.toml ${CONFIG_DIR}/frps.toml
-          fi
-          echo "frps-panel installed successfully!"
-          echo "Run: frps-panel server -c ${CONFIG_DIR}/frps.toml"
-          INSTALL_EOF
-          chmod +x ${BUNDLE}/install.sh
-
-          tar -czf ${BUNDLE}.tar.gz ${BUNDLE}
-          sha256sum ${BUNDLE}.tar.gz > ${BUNDLE}.tar.gz.sha256
-          echo "Packaged: ${BUNDLE}.tar.gz"
-
-      - name: Upload binary artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frps-panel-${{ matrix.arch }}
-          path: |
-            frps-panel_linux_${{ matrix.arch }}
-            frps-panel_linux_${{ matrix.arch }}.sha256
-            frps-panel_offline_linux_${{ matrix.arch }}.tar.gz
-            frps-panel_offline_linux_${{ matrix.arch }}.tar.gz.sha256
-
-  # ==================== 创建 GitHub Release ====================
+  # ==================== 生成校验和汇总 + GitHub Release ====================
   create-release:
-    needs: [build-docker, build-binaries]
+    needs: [get-version, build-binaries, build-docker]
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Download all artifacts
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all binaries
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: release/
           merge-multiple: true
 
-      - name: Generate version tag
-        id: version
+      - name: Generate checksums & release info
         run: |
-          VERSION=$(date +'%Y.%m.%d')-${GITHUB_SHA::7}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          cd release
+          echo "# frps-panel ${{ needs.get-version.outputs.panel_version }}" > RELEASE.md
+          echo "" >> RELEASE.md
+          echo "Build Date: ${{ needs.get-version.outputs.build_date }}" >> RELEASE.md
+          echo "FRP Version: v${{ needs.get-version.outputs.frp_version }}" >> RELEASE.md
+          echo "" >> RELEASE.md
 
-      - name: Create Release
+          # 合并所有 sha256
+          cat *.sha256 > go-frp-panel_sha256_checksums.txt 2>/dev/null || true
+          rm -f *.sha256
+
+          echo "## 文件列表" >> RELEASE.md
+          echo "" >> RELEASE.md
+          echo "| 文件 | 大小 |" >> RELEASE.md
+          echo "|------|------|" >> RELEASE.md
+          for f in *; do
+            if [ -f "$f" ]; then
+              SIZE=$(ls -lh "$f" | awk '{print $5}')
+              echo "| $f | $SIZE |" >> RELEASE.md
+            fi
+          done
+
+          echo "" >> RELEASE.md
+          echo "Full checksums: [go-frp-panel_sha256_checksums.txt](./go-frp-panel_sha256_checksums.txt)" >> RELEASE.md
+
+          ls -lh
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: frps-panel v${{ steps.version.outputs.version }}
-          body: |
-            ## 🚀 frps-panel v${{ steps.version.outputs.version }}
-
-            frps Web 可视化管理面板，集成智能优化引擎、实时监控、带宽管理。
-
-            ### 🐳 Docker 部署（推荐）
-
-            ```bash
-            docker pull attychen/frps-panel:${{ steps.version.outputs.version }}
-            docker pull attychen/frps-panel:latest
-
-            # amd64
-            docker run -d --name frps-panel --network host \
-              -v /etc/frp:/etc/frp \
-              -v /var/log/frp:/var/log/frp \
-              attychen/frps-panel:latest
-
-            # arm64
-            docker run -d --name frps-panel --network host \
-              -v /etc/frp:/etc/frp \
-              -v /var/log/frp:/var/log/frp \
-              attychen/frps-panel:latest
-            ```
-
-            ### 📦 离线包部署
-
-            ```bash
-            # amd64
-            wget https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/frps-panel_offline_linux_amd64.tar.gz
-            tar -xzf frps-panel_offline_linux_amd64.tar.gz
-            cd frps-panel_offline_linux_amd64 && bash install.sh
-
-            # arm64
-            wget https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/frps-panel_offline_linux_arm64.tar.gz
-            tar -xzf frps-panel_offline_linux_arm64.tar.gz
-            cd frps-panel_offline_linux_arm64 && bash install.sh
-
-            # armv7 (树莓派)
-            wget https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/frps-panel_offline_linux_armv7.tar.gz
-            tar -xzf frps-panel_offline_linux_armv7.tar.gz
-            cd frps-panel_offline_linux_armv7 && bash install.sh
-            ```
-
-            ### ✨ 面板功能
-
-            | 功能 | 说明 |
-            |------|------|
-            | 📊 监控仪表盘 | 实时流量、连接数、CPU/内存 |
-            | ⚡ 智能优化 | 自动计算最优 TCP 参数 |
-            | 📡 带宽管理 | 限速、流量统计 |
-            | 🛡️ 防火墙 | IP 黑白名单 |
-            | 🌐 国际化 | 中文/English |
+          tag_name: ${{ needs.get-version.outputs.panel_version }}
+          name: frps-panel ${{ needs.get-version.outputs.panel_version }}
+          body_path: release/RELEASE.md
           files: |
-            artifacts/*
+            release/*
           draft: false
           prerelease: false
         env:
