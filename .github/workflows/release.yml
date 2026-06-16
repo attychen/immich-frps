@@ -88,26 +88,122 @@ jobs:
       matrix:
         include:
           # ─── Linux ───
-          - os: linux       ; goos: linux     ; goarch: amd64   ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: arm64   ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: arm     ; goarm: '7'  ; gomips: ''   ; ext: ''    ; sufsfx: 'hf'
-          - os: linux       ; goos: linux     ; goarch: arm     ; goarm: '5'  ; gomips: ''   ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: mips64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: mips64le; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: mips    ; goarm: ''   ; gomips: 'softfloat' ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: mipsle  ; goarm: ''   ; gomips: 'softfloat' ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: riscv64 ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
-          - os: linux       ; goos: linux     ; goarch: loong64 ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: amd64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: arm64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: arm
+            goarm: '7'
+            gomips: ''
+            ext: ''
+            sufsfx: 'hf'
+          - os: linux
+            goos: linux
+            goarch: arm
+            goarm: '5'
+            gomips: ''
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: mips64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: mips64le
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: mips
+            goarm: ''
+            gomips: 'softfloat'
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: mipsle
+            goarm: ''
+            gomips: 'softfloat'
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: riscv64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
+          - os: linux
+            goos: linux
+            goarch: loong64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
           # ─── Windows ───
-          - os: windows     ; goos: windows   ; goarch: amd64  ; goarm: ''   ; gomips: ''   ; ext: '.exe' ; sufsfx: ''
-          - os: windows     ; goos: windows   ; goarch: arm64  ; goarm: ''   ; gomips: ''   ; ext: '.exe' ; sufsfx: ''
+          - os: windows
+            goos: windows
+            goarch: amd64
+            goarm: ''
+            gomips: ''
+            ext: '.exe'
+            sufsfx: ''
+          - os: windows
+            goos: windows
+            goarch: arm64
+            goarm: ''
+            gomips: ''
+            ext: '.exe'
+            sufsfx: ''
           # ─── macOS ───
-          - os: darwin      ; goos: darwin    ; goarch: amd64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
-          - os: darwin      ; goos: darwin    ; goarch: arm64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: darwin
+            goos: darwin
+            goarch: amd64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
+          - os: darwin
+            goos: darwin
+            goarch: arm64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
           # ─── FreeBSD ───
-          - os: freebsd     ; goos: freebsd   ; goarch: amd64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: freebsd
+            goos: freebsd
+            goarch: amd64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
           # ─── Android ───
-          - os: android     ; goos: android   ; goarch: arm64  ; goarm: ''   ; gomips: ''   ; ext: ''    ; sufsfx: ''
+          - os: android
+            goos: android
+            goarch: arm64
+            goarm: ''
+            gomips: ''
+            ext: ''
+            sufsfx: ''
 
     steps:
       - name: Checkout
