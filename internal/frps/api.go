@@ -33,8 +33,7 @@ type frps struct {
 	sseApi       iface2.ISSE
 	binDir       string
 	cfgFilePath  string
-	firewall     *Firewall
-}
+	firewall     *Firewall	bandwidthCtrl *BandwidthController}
 
 func (this *frps) SetCloudApi(api *model.CloudApi) {
 	if api == nil {
@@ -109,8 +108,7 @@ func New(cfg *v1.ServerConfig, install igs.Service) (iface2.IFrps, error) {
 		binDir:       filepath.Dir(binPath),
 		webSocketApi: ws.NewWebSocket(),
 		sseApi:       sseApi,
-		firewall:     NewFirewall(filepath.Dir(binPath)),
-	}
+		firewall:     NewFirewall(filepath.Dir(binPath)),		bandwidthCtrl: NewBandwidthController(),	}
 	f.webSocketApi.SetWebSocket(f)
 	f.sseApi.SetSSECallBack(f)
 	f.InitClientsConfig()
