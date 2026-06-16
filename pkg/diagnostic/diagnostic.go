@@ -8,7 +8,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -69,18 +68,18 @@ func CheckTCPFastOpen() CheckItem {
 
 // CheckFileDescriptors 检测文件描述符限制
 func CheckFileDescriptors() CheckItem {
-	var rlim syscall.Rlimit
-	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rlim); err != nil {
-		return CheckItem{Name: "文件描述符限制", Status: "error", Message: "无法获取", Value: err.Error()}
+	if runtime.GOOS == "windows" {
+		return CheckItem{Name: "文件描述符限制", Status: "warn", Message: "Windows 不适用", Value: "N/A"}
 	}
-	val := fmt.Sprintf("soft=%d hard=%d", rlim.Cur, rlim.Max)
-	if rlim.Cur >= 65535 {
-		return CheckItem{Name: "文件描述符限制", Status: "ok", Message: "限制充足", Value: val}
+	return checkFileDescriptorsUnix()
+}
+
+// CheckDisk 检测磁盘使用率
+func CheckDisk() CheckItem {
+	if runtime.GOOS == "windows" {
+		return CheckItem{Name: "磁盘使用率", Status: "warn", Message: "Windows 不支持", Value: "N/A"}
 	}
-	if rlim.Cur >= 10000 {
-		return CheckItem{Name: "文件描述符限制", Status: "warn", Message: "建议提升到65535+", Value: val}
-	}
-	return CheckItem{Name: "文件描述符限制", Status: "warn", Message: "限制过低，可能影响并发", Value: val}
+	return checkDiskUnix()
 }
 
 // CheckPorts 检测端口可用性
@@ -120,27 +119,6 @@ func CheckMemory() CheckItem {
 		return CheckItem{Name: "内存使用率", Status: "warn", Message: "偏高", Value: val}
 	}
 	return CheckItem{Name: "内存使用率", Status: "error", Message: "严重不足", Value: val}
-}
-
-// CheckDisk 检测磁盘使用率（使用 syscall.Statfs）
-func CheckDisk() CheckItem {
-	var stat syscall.Statfs_t
-	if err := syscall.Statfs("/", &stat); err != nil {
-		return CheckItem{Name: "磁盘使用率", Status: "error", Message: "无法获取", Value: err.Error()}
-	}
-	total := stat.Blocks * uint64(stat.Bsize)
-	avail := stat.Bavail * uint64(stat.Bsize)
-	used := total - avail
-	percent := float64(used) / float64(total) * 100
-	val := fmt.Sprintf("%.1f%% (已用%.0fGB/总量%.0fGB)", percent,
-		float64(used)/1024/1024/1024, float64(total)/1024/1024/1024)
-	if percent < 80 {
-		return CheckItem{Name: "磁盘使用率", Status: "ok", Message: "正常", Value: val}
-	}
-	if percent < 95 {
-		return CheckItem{Name: "磁盘使用率", Status: "warn", Message: "偏高", Value: val}
-	}
-	return CheckItem{Name: "磁盘使用率", Status: "error", Message: "磁盘空间不足", Value: val}
 }
 
 // CheckCPU 检测 CPU 使用率（简单采样 /proc/stat）
